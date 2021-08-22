@@ -1,0 +1,4 @@
+#ifndef SIMPLE_VECTOR_H
+#define SIMPLE_VECTOR_H
+
+#endif // SIMPLE_VECTOR_H
