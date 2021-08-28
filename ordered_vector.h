@@ -6,7 +6,7 @@
 #include <memory>
 
 template <class T1, class T2>
-void construct(T1 *pT1, const T2 &&rrT2)
+void construct(T1 *pT1, T2 &&rrT2)
 {
     new (pT1) T1(std::move(rrT2));
 }
@@ -31,7 +31,7 @@ class OrderedVectorImpl
 {
 public:
     OrderedVectorImpl(size_t capacity = 0);
-    OrderedVectorImpl(std::initializer_list<T>& lst);
+    OrderedVectorImpl(std::initializer_list<T>&& lst);
     OrderedVectorImpl(OrderedVectorImpl<T>&& rrOtherVecImpl);
     OrderedVectorImpl(OrderedVectorImpl<T>& rOtherVecImpl);
     ~OrderedVectorImpl();
@@ -64,7 +64,7 @@ OrderedVectorImpl<T>::OrderedVectorImpl(size_t capacity) :
 }
 
 template <class T>
-OrderedVectorImpl<T>::OrderedVectorImpl(std::initializer_list<T>& lst) :
+OrderedVectorImpl<T>::OrderedVectorImpl(std::initializer_list<T>&& lst) :
     m_arr (static_cast<T*>(lst.size() == 0 ? nullptr : operator new (sizeof (T) * lst.size()))),
     m_capacity (lst.size()),
     m_used (0),
