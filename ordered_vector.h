@@ -223,6 +223,9 @@ public:
         explicit base_iterator(T* pT);
         base_iterator(const base_iterator& rIt);
 
+        iterator& operator=(const base_iterator& rcOtherIter) noexcept;
+        iterator& operator=(base_iterator&& rcOtherIter) noexcept;
+
         bool operator==(const base_iterator& other) const;
         bool operator!=(const base_iterator& other) const;
 
@@ -288,6 +291,7 @@ OrderedVector<T>::~OrderedVector()
 template <class T>
 typename OrderedVector<T>::base_iterator OrderedVector<T>::find(const T& other)
 {
+    std::cout << "OrderedVector<T>::base_iterator find(const T& other)" << std::endl;
     for (auto it = begin(); it != end(); ++it)
     {
         if (*it == other)
@@ -296,21 +300,19 @@ typename OrderedVector<T>::base_iterator OrderedVector<T>::find(const T& other)
             {
                 std::ptrdiff_t diff = m_shrPrtImpl->m_arr - &*it;
                 m_shrPrtImpl.reset(new OrderedVectorImpl<T>(*m_shrPrtImpl));
-//                std::ptrdiff_t diff = &*it - m_shrPrtImpl->m_pArr;
-//                OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>(*m_shrPrtImpl);
-//                m_shrPrtImpl.reset(temp);
-//                it = typename OrderedVector<T>::iterator(&m_shrPrtImpl->m_arr[diff]);
+                it = typename OrderedVector<T>::iterator(&m_shrPrtImpl->m_arr[diff]);
             }
             m_shrPrtImpl->m_dataChanged = true;
             return it;
         }
     }
-    return end();
+    return end() - 1;
 }
 
 template <class T>
 typename OrderedVector<T>::const_iterator OrderedVector<T>::find(const T& other) const
 {
+    std::cout << "OrderedVector<T>::const_iterator find(const T& other) const" << std::endl;
     for (auto it = cbegin(); it != cend(); ++it)
         if (*it == other)
             return it;
@@ -363,13 +365,11 @@ void OrderedVector<T>::erase(iterator& iter)
     std::ptrdiff_t shift = &*iter - m_shrPrtImpl->m_arr;
     if (m_shrPrtImpl.use_count() > 1)
     {
-//        OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>(*m_shrPrtImpl);
-//        m_shrPrtImpl.reset(temp);
         m_shrPrtImpl.reset(new OrderedVectorImpl<T>(*m_shrPrtImpl));
     }
 
     std::swap(m_shrPrtImpl->m_arr[shift], m_shrPrtImpl->m_arr[m_shrPrtImpl->m_used - 1]);
-    m_shrPrtImpl->m_Used --;
+    m_shrPrtImpl->m_used --;
     m_shrPrtImpl->sort();
 }
 
@@ -411,8 +411,6 @@ OrderedVector<T>& OrderedVector<T>::operator=(OrderedVector<T>&& rrOtherVec) noe
     {
         if (m_shrPrtImpl.use_count() > 1)
         {
-//            OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>();
-//            m_shrPrtImpl.reset(temp);
             m_shrPrtImpl.reset(new OrderedVectorImpl<T>());
         }
         m_shrPrtImpl->swap(*rrOtherVec.m_shrPrtImpl);
@@ -439,8 +437,6 @@ T& OrderedVector<T>::operator[](size_t i)
 {
     if (m_shrPrtImpl.use_count() > 1)
     {
-//        OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>(*m_shrPrtImpl);
-//        m_shrPrtImpl.reset(temp);
         m_shrPrtImpl.reset(new OrderedVectorImpl<T>(*m_shrPrtImpl));
     }
     m_shrPrtImpl->m_dataChanged = true;
@@ -452,8 +448,6 @@ typename OrderedVector<T>::iterator OrderedVector<T>::begin()
 {
     if (m_shrPrtImpl.use_count() > 1)
     {
-//        OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>(*m_shrPrtImpl);
-//        m_shrPrtImpl.reset(temp);
         m_shrPrtImpl.reset(new OrderedVectorImpl<T>(*m_shrPrtImpl));
     }
     m_shrPrtImpl->m_dataChanged = true;
@@ -471,8 +465,6 @@ typename OrderedVector<T>::iterator OrderedVector<T>::end()
 {
     if (m_shrPrtImpl.use_count() > 1)
     {
-//        OrderedVectorImpl<T>* temp = new OrderedVectorImpl<T>(*m_shrPrtImpl);
-//        m_shrPrtImpl.reset(temp);
         m_shrPrtImpl.reset(new OrderedVectorImpl<T>(*m_shrPrtImpl));
     }
     m_shrPrtImpl->m_dataChanged = true;
@@ -562,6 +554,20 @@ typename OrderedVector<T>::base_iterator OrderedVector<T>::iterator::operator--(
 {
     base_iterator tmp(m_Iter --);
     return tmp;
+}
+
+template <class T>
+typename OrderedVector<T>::base_iterator& OrderedVector<T>::base_iterator::operator=(const base_iterator& rcOtherIter) noexcept
+{
+    m_Iter = rcOtherIter.m_Iter;
+    return *this;
+}
+
+template <class T>
+typename OrderedVector<T>::base_iterator& OrderedVector<T>::base_iterator::operator=(base_iterator&& rcOtherIter) noexcept
+{
+    m_Iter = rcOtherIter.m_Iter;
+    return *this;
 }
 
 template <class U>
